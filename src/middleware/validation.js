@@ -63,6 +63,51 @@ const validateLogin = [
   handleValidationErrors,
 ];
 
+// Signup validation (for /api/auth/signup)
+const validateSignup = [
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail()
+    .isLength({ max: 254 })
+    .withMessage('Email address is too long'),
+
+  body('password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage(
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'
+    ),
+
+  body('confirmPassword').custom((value, { req }) => {
+    if (value !== req.body.password) {
+      throw new Error('Password confirmation does not match password');
+    }
+    return true;
+  }),
+
+  handleValidationErrors,
+];
+
+// Signin validation (for /api/auth/signin)
+const validateSignin = [
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
+
+  body('password')
+    .notEmpty()
+    .withMessage('Password is required')
+    .isLength({ min: 1 })
+    .withMessage('Password cannot be empty'),
+
+  handleValidationErrors,
+];
+
 // Profile update validation
 const validateProfileUpdate = [
   body('name')
@@ -192,6 +237,8 @@ const validatePasswordReset = [
 module.exports = {
   validateRegistration,
   validateLogin,
+  validateSignup,
+  validateSignin,
   validateProfileUpdate,
   validatePasswordChange,
   validateEmail,

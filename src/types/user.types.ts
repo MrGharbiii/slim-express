@@ -3,21 +3,22 @@
 
 export interface IUser {
   _id: string;
-  name: string;
   email: string;
   password?: string; // Optional because it's usually excluded
-  profilePicture?: string;
-  dateOfBirth?: Date;
-  gender: 'male' | 'female' | 'other' | 'prefer-not-to-say';
-  height?: number; // in centimeters
-  weight?: number; // in kilograms
-  activityLevel: 'sedentary' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active';
-  goals: Array<'weight-loss' | 'weight-gain' | 'muscle-gain' | 'maintain-weight' | 'improve-fitness' | 'improve-strength'>;
   isEmailVerified: boolean;
   refreshTokens: IRefreshToken[];
   lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Optional profile fields that can be added later
+  name?: string;
+  profilePicture?: string;
+  dateOfBirth?: Date;
+  gender?: 'male' | 'female' | 'other' | 'prefer-not-to-say';
+  height?: number; // in centimeters
+  weight?: number; // in kilograms
+  activityLevel?: 'sedentary' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active';
+  goals?: Array<'weight-loss' | 'weight-gain' | 'muscle-gain' | 'maintain-weight' | 'improve-fitness' | 'improve-strength'>;
 }
 
 export interface IRefreshToken {
@@ -44,21 +45,22 @@ export interface IUserStatics {
 
 export interface IUserProfile {
   id: string;
-  name: string;
   email: string;
-  profilePicture?: string;
-  dateOfBirth?: Date;
-  gender: string;
-  height?: number;
-  weight?: number;
-  activityLevel: string;
-  goals: string[];
   isEmailVerified: boolean;
   lastLoginAt?: Date;
   createdAt: Date;
   updatedAt: Date;
-  bmi: string | null;
-  age: number | null;
+  // Optional profile fields
+  name?: string;
+  profilePicture?: string;
+  dateOfBirth?: Date;
+  gender?: string;
+  height?: number;
+  weight?: number;
+  activityLevel?: string;
+  goals?: string[];
+  bmi?: string | null;
+  age?: number | null;
 }
 
 export interface IUserStats {
@@ -69,7 +71,6 @@ export interface IUserStats {
 
 // Registration/Login DTOs
 export interface IUserRegistration {
-  name: string;
   email: string;
   password: string;
   confirmPassword: string;

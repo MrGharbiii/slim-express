@@ -7,6 +7,15 @@ require('dotenv').config();
 
 // Import database connection
 const { connectDB } = require('./config/database');
+const {
+  handleAuthError,
+  handleValidationError,
+  handleDuplicateKeyError,
+  handleCastError,
+  handleRateLimitError,
+  errorHandler,
+  notFoundHandler,
+} = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -73,59 +82,21 @@ app.get('/api/health', (req, res) => {
 });
 
 // API routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 
+// Error handling middleware (order matters!)
+app.use(handleAuthError);
+app.use(handleValidationError);
+app.use(handleDuplicateKeyError);
+app.use(handleCastError);
+app.use(handleRateLimitError);
+
 // 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    error: 'Route not found',
-    message: `The route ${req.originalUrl} does not exist`,
-  });
-});
+app.use(notFoundHandler);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-
-  // Handle specific error types
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      error: 'Validation Error',
-      message: err.message,
-      details: err.errors,
-    });
-  }
-
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      error: 'Invalid Token',
-      message: 'Please provide a valid authentication token',
-    });
-  }
-
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      error: 'Token Expired',
-      message: 'Your session has expired. Please login again',
-    });
-  }
-
-  if (err.code === 11000) {
-    return res.status(400).json({
-      error: 'Duplicate Entry',
-      message: 'This record already exists',
-    });
-  }
-
-  // Default error response
-  res.status(err.status || 500).json({
-    error: 'Internal Server Error',
-    message:
-      process.env.NODE_ENV === 'development'
-        ? err.message
-        : 'Something went wrong',
-  });
-});
+// Final error handler
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
