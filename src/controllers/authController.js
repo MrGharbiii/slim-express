@@ -158,7 +158,6 @@ const signup = async (req, res) => {
     // Update last login
     user.lastLoginAt = new Date();
     await user.save();
-
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -166,6 +165,8 @@ const signup = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        onboardingStep: user.onboardingStep,
       },
     });
   } catch (error) {
@@ -206,7 +207,6 @@ const signin = async (req, res) => {
     // Update last login
     user.lastLoginAt = new Date();
     await user.save();
-
     res.json({
       success: true,
       message: 'Login successful',
@@ -214,6 +214,8 @@ const signin = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        onboardingCompleted: user.onboardingCompleted,
+        onboardingStep: user.onboardingStep,
       },
     });
   } catch (error) {

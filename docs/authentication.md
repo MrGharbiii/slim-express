@@ -58,7 +58,9 @@ Content-Type: application/json
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": "507f1f77bcf86cd799439011",
-    "email": "user@example.com"
+    "email": "user@example.com",
+    "onboardingCompleted": false,
+    "onboardingStep": 0
   }
 }
 ```
@@ -84,7 +86,9 @@ Content-Type: application/json
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
     "id": "507f1f77bcf86cd799439011",
-    "email": "user@example.com"
+    "email": "user@example.com",
+    "onboardingCompleted": false,
+    "onboardingStep": 0
   }
 }
 ```
@@ -377,6 +381,472 @@ The system includes comprehensive logging for:
 - Token generation and validation
 - Security events
 - API usage patterns
+
+## Onboarding API Endpoints
+
+### Onboarding Routes (`/api/onboarding`)
+
+All onboarding endpoints require authentication (JWT token in Authorization header).
+
+#### 1. Get Onboarding Status
+
+```http
+GET /api/onboarding/status
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Onboarding status retrieved successfully",
+  "data": {
+    "completed": false,
+    "step": 1,
+    "completeness": 25,
+    "sectionsCompleted": {
+      "basicInfo": true,
+      "lifestyle": false,
+      "medicalHistory": false,
+      "goals": false,
+      "preferences": false
+    }
+  }
+}
+```
+
+#### 2. Get Full User Profile
+
+```http
+GET /api/onboarding/profile
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Profile retrieved successfully",
+  "data": {
+    "id": "507f1f77bcf86cd799439011",
+    "email": "user@example.com",
+    "isEmailVerified": false,
+    "onboardingCompleted": false,
+    "onboardingStep": 1,
+    "profileCompleteness": 25,
+    "sessionInfo": {
+      "completionTimestamp": null,
+      "completionDate": null,
+      "totalXPEarned": 0,
+      "userLevel": 1,
+      "sectionsCompleted": 1,
+      "completionRate": "25%"
+    },
+    "basicInfo": {
+      "name": "John Doe",
+      "dateOfBirth": "1990-05-15",
+      "height": 175,
+      "weight": 70,
+      "gender": "male",
+      "location": "New York",
+      "completedAt": "2024-01-15T10:30:00.000Z"
+    },
+    "lifestyle": {
+      "sleepHours": null,
+      "exerciseFrequency": null,
+      "stressLevel": null,
+      "completedAt": null
+    },
+    "medicalHistory": {
+      "conditions": [],
+      "medications": [],
+      "allergies": [],
+      "familyHistory": [],
+      "completedAt": null
+    },
+    "goals": {
+      "primary": null,
+      "targetWeight": null,
+      "timeframe": null,
+      "completedAt": null
+    },
+    "preferences": {
+      "workoutTypes": [],
+      "dietPreferences": [],
+      "completedAt": null
+    },
+    "dataQuality": {
+      "hasBasicInfo": true,
+      "hasLifestyle": false,
+      "hasMedicalHistory": false,
+      "hasGoals": false,
+      "hasPreferences": false,
+      "completenessScore": "25%"
+    },
+    "createdAt": "2024-01-15T09:00:00.000Z",
+    "updatedAt": "2024-01-15T10:30:00.000Z"
+  }
+}
+```
+
+#### 3. Update Basic Information
+
+```http
+PUT /api/onboarding/basic-info
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "dateOfBirth": "1990-05-15",
+  "height": 175,
+  "weight": 70,
+  "gender": "male",
+  "location": "New York"
+}
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Basic information updated successfully",
+  "data": {
+    "basicInfo": {
+      "name": "John Doe",
+      "dateOfBirth": "1990-05-15",
+      "height": 175,
+      "weight": 70,
+      "gender": "male",
+      "location": "New York",
+      "completedAt": "2024-01-15T10:30:00.000Z"
+    },
+    "onboardingStatus": {
+      "completed": false,
+      "step": 1,
+      "completeness": 25,
+      "sectionsCompleted": {
+        "basicInfo": true,
+        "lifestyle": false,
+        "medicalHistory": false,
+        "goals": false,
+        "preferences": false
+      }
+    }
+  }
+}
+```
+
+#### 4. Update Lifestyle Information
+
+```http
+PUT /api/onboarding/lifestyle
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "sleepHours": 7,
+  "exerciseFrequency": "3-4 times per week",
+  "stressLevel": "moderate",
+  "smokingStatus": "never",
+  "alcoholConsumption": "occasional"
+}
+```
+
+#### 5. Update Medical History
+
+```http
+PUT /api/onboarding/medical-history
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "conditions": ["hypertension"],
+  "medications": ["lisinopril"],
+  "allergies": ["peanuts"],
+  "familyHistory": ["diabetes", "heart disease"],
+  "injuries": []
+}
+```
+
+#### 6. Update Goals
+
+```http
+PUT /api/onboarding/goals
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "primary": "weight_loss",
+  "targetWeight": 65,
+  "timeframe": "6 months",
+  "specificGoals": ["lose 10kg", "improve cardiovascular health"],
+  "motivations": ["health", "confidence"]
+}
+```
+
+#### 7. Update Preferences (Optional)
+
+```http
+PUT /api/onboarding/preferences
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+
+{
+  "workoutTypes": ["cardio", "strength training"],
+  "dietPreferences": ["vegetarian"],
+  "notificationPreferences": {
+    "workoutReminders": true,
+    "progressUpdates": true,
+    "motivationalMessages": false
+  }
+}
+```
+
+#### 8. Complete Onboarding
+
+```http
+POST /api/onboarding/complete
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Onboarding completed successfully! Welcome to your fitness journey.",
+  "data": {
+    "user": {
+      "id": "507f1f77bcf86cd799439011",
+      "email": "user@example.com",
+      "isEmailVerified": false,
+      "onboardingCompleted": true,
+      "onboardingStep": 6,
+      "profileCompleteness": 100,
+      "basicInfo": {
+        "name": "John Doe"
+      },
+      "createdAt": "2024-01-15T09:00:00.000Z",
+      "lastLoginAt": "2024-01-15T10:30:00.000Z"
+    },
+    "onboardingStatus": {
+      "completed": true,
+      "step": 6,
+      "completeness": 100,
+      "sectionsCompleted": {
+        "basicInfo": true,
+        "lifestyle": true,
+        "medicalHistory": true,
+        "goals": true,
+        "preferences": true
+      }
+    }
+  }
+}
+```
+
+#### 9. Skip Onboarding
+
+```http
+POST /api/onboarding/skip
+Authorization: Bearer <jwt_token>
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "success": true,
+  "message": "Onboarding skipped. You can complete your profile anytime from settings.",
+  "data": {
+    "user": {
+      "id": "507f1f77bcf86cd799439011",
+      "email": "user@example.com",
+      "isEmailVerified": false,
+      "onboardingCompleted": true,
+      "onboardingStep": 6,
+      "profileCompleteness": 0,
+      "basicInfo": {
+        "name": null
+      },
+      "createdAt": "2024-01-15T09:00:00.000Z",
+      "lastLoginAt": "2024-01-15T10:30:00.000Z"
+    },
+    "onboardingStatus": {
+      "completed": true,
+      "step": 6,
+      "completeness": 0,
+      "sectionsCompleted": {
+        "basicInfo": false,
+        "lifestyle": false,
+        "medicalHistory": false,
+        "goals": false,
+        "preferences": false
+      }
+    }
+  }
+}
+```
+
+### Health Check Routes (`/api/health`)
+
+#### 1. Basic Health Check
+
+```http
+GET /api/health
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "status": "OK",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "environment": "development"
+}
+```
+
+#### 2. Detailed Health Check
+
+```http
+GET /api/health/detailed
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "status": "OK",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "environment": "development",
+  "services": {
+    "database": "connected",
+    "redis": "not_configured",
+    "api": "operational"
+  },
+  "system": {
+    "uptime": "2h 15m 30s",
+    "memory": "45.2 MB",
+    "cpu": "12%"
+  }
+}
+```
+
+#### 3. Database Health Check
+
+```http
+GET /api/health/database
+```
+
+**Response (200 OK):**
+
+```json
+{
+  "status": "OK",
+  "database": "connected",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "stats": {
+    "totalUsers": 150,
+    "activeUsers": 45,
+    "completedOnboarding": 120
+  }
+}
+```
+
+## Validation Rules for Onboarding
+
+### Basic Information Validation
+
+- **Name:** 2-50 characters, letters and spaces only
+- **Date of Birth:** Valid date, age 13-120 years
+- **Height:** 50-300 cm
+- **Weight:** 20-500 kg
+- **Gender:** "male", "female", "other", "prefer_not_to_say"
+
+### Lifestyle Validation
+
+- **Sleep Hours:** 1-24 hours
+- **Exercise Frequency:** Predefined options
+- **Stress Level:** "low", "moderate", "high"
+- **Smoking Status:** "never", "former", "current"
+- **Alcohol Consumption:** "never", "rarely", "occasionally", "regularly"
+
+### Medical History Validation
+
+- **Conditions:** Array of predefined medical conditions
+- **Medications:** Array of medication names
+- **Allergies:** Array of allergen names
+- **Family History:** Array of hereditary conditions
+
+### Goals Validation
+
+- **Primary Goal:** "weight_loss", "weight_gain", "muscle_building", "general_fitness", "endurance"
+- **Target Weight:** Number (if applicable)
+- **Timeframe:** "1 month", "3 months", "6 months", "1 year", "long_term"
+
+## Frontend Integration for Onboarding
+
+### Onboarding Flow Example
+
+```javascript
+// 1. Check onboarding status after login
+const checkOnboardingStatus = async () => {
+  const response = await fetch('/api/onboarding/status', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await response.json();
+
+  if (!data.data.completed) {
+    // Navigate to onboarding screen
+    navigation.navigate('Onboarding', { step: data.data.step });
+  } else {
+    // Navigate to main app
+    navigation.navigate('Dashboard');
+  }
+};
+
+// 2. Update onboarding section
+const updateBasicInfo = async (basicInfo) => {
+  const response = await fetch('/api/onboarding/basic-info', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(basicInfo),
+  });
+
+  const data = await response.json();
+
+  if (data.success) {
+    // Move to next step
+    setOnboardingStep(data.data.onboardingStatus.step + 1);
+  }
+};
+
+// 3. Complete onboarding
+const completeOnboarding = async () => {
+  const response = await fetch('/api/onboarding/complete', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await response.json();
+
+  if (data.success) {
+    // Navigate to dashboard
+    navigation.navigate('Dashboard');
+  }
+};
+```
 
 ## Future Enhancements
 

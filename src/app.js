@@ -84,6 +84,8 @@ app.get('/api/health', (req, res) => {
 // API routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/onboarding', require('./routes/onboarding'));
+app.use('/api/health', require('./routes/health'));
 
 // Error handling middleware (order matters!)
 app.use(handleAuthError);
