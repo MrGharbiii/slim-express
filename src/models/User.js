@@ -95,13 +95,21 @@ const userSchema = new mongoose.Schema(
         enum: [
           'sedentary',
           'lightly-active',
+          'lightly_active',
           'moderately-active',
+          'moderately_active',
           'very-active',
+          'very_active',
           'extra-active',
+          'extra_active',
         ],
       },
       city: String,
       profession: String,
+      gender: {
+        type: String,
+        enum: ['male', 'female', 'other', 'Homme', 'Femme', 'Other'],
+      },
       waistCircumference: Number,
       waistUnit: {
         type: String,

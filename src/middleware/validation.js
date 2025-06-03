@@ -284,7 +284,6 @@ const validateBasicInfo = [
     .optional()
     .isFloat({ min: 20, max: 500 })
     .withMessage('Weight must be between 20 and 500 kg'),
-
   body('weightUnit')
     .optional()
     .isIn(['kg', 'lbs'])
@@ -302,20 +301,17 @@ const validateBasicInfo = [
       'extra-active',
       'extra_active',
     ])
-    .withMessage('Please select a valid activity level')
-    .customSanitizer((value) => {
-      // Normalize to hyphenated format for consistency
-      if (value) {
-        return value.replace(/_/g, '-');
-      }
-      return value;
-    }),
-
+    .withMessage('Please select a valid activity level'),
   body('city')
     .optional()
     .trim()
     .isLength({ max: 100 })
     .withMessage('City name is too long'),
+
+  body('gender')
+    .optional()
+    .isIn(['male', 'female', 'other', 'Homme', 'Femme', 'Other'])
+    .withMessage('Invalid gender selection'),
 
   body('profession')
     .optional()
@@ -350,13 +346,33 @@ const validateBasicInfo = [
 const validateLifestyle = [
   body('wakeUpTime')
     .optional()
-    .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Wake up time must be in HH:MM format'),
+    .custom((value) => {
+      // Accept both 24-hour format (HH:MM) and 12-hour format (HH:MM AM/PM)
+      const time24Hour = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      const time12Hour = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(AM|PM|am|pm)$/i;
+
+      if (!time24Hour.test(value) && !time12Hour.test(value)) {
+        throw new Error(
+          'Wake up time must be in HH:MM format or HH:MM AM/PM format'
+        );
+      }
+      return true;
+    }),
 
   body('sleepTime')
     .optional()
-    .matches(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Sleep time must be in HH:MM format'),
+    .custom((value) => {
+      // Accept both 24-hour format (HH:MM) and 12-hour format (HH:MM AM/PM)
+      const time24Hour = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      const time12Hour = /^(1[0-2]|0?[1-9]):[0-5][0-9]\s?(AM|PM|am|pm)$/i;
+
+      if (!time24Hour.test(value) && !time12Hour.test(value)) {
+        throw new Error(
+          'Sleep time must be in HH:MM format or HH:MM AM/PM format'
+        );
+      }
+      return true;
+    }),
 
   body('workSchedule')
     .optional()
