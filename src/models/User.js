@@ -272,23 +272,34 @@ const userSchema = new mongoose.Schema(
         priorObesityTreatments: String,
       },
       completedAt: Date,
-    },
-
-    // Goals
+    }, // Goals
     goals: {
       primaryGoal: {
         type: String,
         enum: [
+          'weightLoss', // Perte de Poids
+          'muscleGain', // Prise de Muscle
+          'endurance', // Endurance
+          'generalHealth', // Santé Générale
+          'strength', // Force
+          // Keep old values for backward compatibility
           'weight-loss',
           'weight-gain',
           'muscle-gain',
           'maintain-weight',
-          'endurance',
-          'strength',
           'flexibility',
         ],
       },
-      secondaryGoals: [String],
+      secondaryGoals: {
+        type: [String],
+        enum: [
+          'betterSleep', // Meilleur Sommeil
+          'stressReduction', // Réduction du Stress
+          'flexibility', // Flexibilité
+          'balance', // Équilibre
+          'energyBoost', // Boost d'Énergie
+        ],
+      },
       targetTimeline: Number, // in months
       currentWeight: Number,
       targetWeight: Number,

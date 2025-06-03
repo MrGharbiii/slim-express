@@ -492,12 +492,16 @@ const validateGoals = [
   body('primaryGoal')
     .optional()
     .isIn([
+      'weightLoss', // Perte de Poids
+      'muscleGain', // Prise de Muscle
+      'endurance', // Endurance
+      'generalHealth', // Santé Générale
+      'strength', // Force
+      // Keep old values for backward compatibility
       'weight-loss',
       'weight-gain',
       'muscle-gain',
       'maintain-weight',
-      'endurance',
-      'strength',
       'flexibility',
     ])
     .withMessage('Invalid primary goal'),
@@ -510,13 +514,11 @@ const validateGoals = [
   body('secondaryGoals.*')
     .optional()
     .isIn([
-      'weight-loss',
-      'weight-gain',
-      'muscle-gain',
-      'maintain-weight',
-      'endurance',
-      'strength',
-      'flexibility',
+      'betterSleep', // Meilleur Sommeil
+      'stressReduction', // Réduction du Stress
+      'flexibility', // Flexibilité
+      'balance', // Équilibre
+      'energyBoost', // Boost d'Énergie
     ])
     .withMessage('Invalid secondary goal'),
 
