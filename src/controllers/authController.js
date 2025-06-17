@@ -497,6 +497,47 @@ const changePassword = async (req, res) => {
   }
 };
 
+// Update plan request status
+const updatePlanRequest = async (req, res) => {
+  try {
+    const { planRequest } = req.body;
+    const userId = req.user.id;
+
+    // Find and update user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Update the planRequest field
+    user.planRequest = planRequest;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Plan request status updated successfully',
+      data: {
+        planRequest: user.planRequest,
+        user: {
+          id: user._id,
+          email: user.email,
+          planRequest: user.planRequest,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Update plan request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while updating plan request status',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -508,4 +549,5 @@ module.exports = {
   getProfile,
   updateProfile,
   changePassword,
+  updatePlanRequest,
 };

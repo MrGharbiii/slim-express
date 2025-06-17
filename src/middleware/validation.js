@@ -318,26 +318,72 @@ const validateBasicInfo = [
     .trim()
     .isLength({ max: 100 })
     .withMessage('Profession is too long'),
-
   body('waistCircumference')
     .optional()
     .isFloat({ min: 20, max: 200 })
     .withMessage('Waist circumference must be between 20 and 200'),
+
+  body('waistUnit')
+    .optional()
+    .isIn(['cm', 'in'])
+    .withMessage('Waist unit must be cm or in'),
 
   body('hipCircumference')
     .optional()
     .isFloat({ min: 20, max: 200 })
     .withMessage('Hip circumference must be between 20 and 200'),
 
+  body('hipUnit')
+    .optional()
+    .isIn(['cm', 'in'])
+    .withMessage('Hip unit must be cm or in'),
   body('smoking')
     .optional()
-    .isIn(['smoker', 'non_smoker', 'occasional_smoker'])
+    .isIn(['non_smoker', 'occasional_smoker', 'regular_smoker'])
     .withMessage('Invalid smoking status'),
 
   body('alcohol')
     .optional()
-    .isIn(['no_alcohol', 'occasional', 'regular', 'heavy'])
+    .isIn([
+      'no_alcohol',
+      'occasional_consumption',
+      'regular_consumption',
+      'excessive_consumption',
+    ])
     .withMessage('Invalid alcohol consumption level'),
+
+  body('initialFatMass')
+    .optional()
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Initial fat mass must be between 0 and 100'),
+
+  body('initialMuscleMass')
+    .optional()
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Initial muscle mass must be between 0 and 100'),
+
+  body('fatMassTarget')
+    .optional()
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Fat mass target must be between 0 and 100'),
+
+  body('muscleMassTarget')
+    .optional()
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Muscle mass target must be between 0 and 100'),
+
+  body('waterRetentionPercentage')
+    .optional()
+    .isString()
+    .isLength({ min: 1, max: 10 })
+    .withMessage(
+      'Water retention percentage must be a string between 1 and 10 characters'
+    ),
+
+  body('numberOfChildren')
+    .optional()
+    .isInt({ min: 0, max: 20 })
+    .withMessage('Number of children must be between 0 and 20'),
 
   handleValidationErrors,
 ];
@@ -536,11 +582,129 @@ const validateGoals = [
     .optional()
     .isFloat({ min: 20, max: 500 })
     .withMessage('Target weight must be between 20 and 500 kg'),
-
   body('weeklyGoal')
     .optional()
     .isFloat({ min: 0.1, max: 5 })
     .withMessage('Weekly goal must be between 0.1 and 5 kg'),
+
+  handleValidationErrors,
+];
+
+// Preferences validation
+const validatePreferences = [
+  body('workoutDuration')
+    .optional()
+    .isIn(['15', '30', '45', '60+'])
+    .withMessage('Workout duration must be one of: 15, 30, 45, 60+'),
+
+  body('equipmentAccess')
+    .optional()
+    .isArray()
+    .withMessage('Equipment access must be an array'),
+
+  body('equipmentAccess.*')
+    .optional()
+    .isIn(['home', 'gym', 'outdoors'])
+    .withMessage('Equipment access must be one of: home, gym, outdoors'),
+
+  body('workoutIntensity')
+    .optional()
+    .isIn(['low', 'medium', 'high'])
+    .withMessage('Workout intensity must be one of: low, medium, high'),
+
+  body('dietaryRestrictions')
+    .optional()
+    .isArray()
+    .withMessage('Dietary restrictions must be an array'),
+  body('dietaryRestrictions.*')
+    .optional()
+    .isString()
+    .withMessage('Each dietary restriction must be a string'),
+
+  body('foodAllergies')
+    .optional()
+    .isString()
+    .isLength({ max: 500 })
+    .withMessage('Food allergies must be a string with maximum 500 characters'),
+
+  body('cookingFrequency')
+    .optional()
+    .isIn(['never', 'rarely', 'sometimes', 'often', 'daily'])
+    .withMessage(
+      'Cooking frequency must be one of: never, rarely, sometimes, often, daily'
+    ),
+  handleValidationErrors,
+];
+
+// Lab Results validation for onboarding
+const validateLabResults = [
+  body('gender')
+    .notEmpty()
+    .withMessage('Gender is required')
+    .isIn(['Male', 'Female', 'Homme', 'Femme'])
+    .withMessage('Gender must be one of: Male, Female, Homme, Femme'),
+
+  body('homaIR')
+    .notEmpty()
+    .withMessage('HOMA-IR value is required')
+    .isFloat({ min: 0 })
+    .withMessage('HOMA-IR must be a positive number'),
+
+  body('vitD')
+    .notEmpty()
+    .withMessage('Vitamin D level is required')
+    .isFloat({ min: 0 })
+    .withMessage('Vitamin D level must be a positive number'),
+
+  body('ferritin')
+    .notEmpty()
+    .withMessage('Ferritin level is required')
+    .isFloat({ min: 0 })
+    .withMessage('Ferritin level must be a positive number'),
+
+  body('hemoglobin')
+    .notEmpty()
+    .withMessage('Hemoglobin level is required')
+    .isFloat({ min: 0 })
+    .withMessage('Hemoglobin level must be a positive number'),
+
+  body('a1c')
+    .notEmpty()
+    .withMessage('A1C percentage is required')
+    .isFloat({ min: 0 })
+    .withMessage('A1C percentage must be a positive number'),
+
+  body('tsh')
+    .notEmpty()
+    .withMessage('TSH level is required')
+    .isFloat({ min: 0 })
+    .withMessage('TSH level must be a positive number'),
+
+  body('testosterone')
+    .notEmpty()
+    .withMessage('Testosterone level is required')
+    .isFloat({ min: 0 })
+    .withMessage('Testosterone level must be a positive number'),
+
+  body('prolactin')
+    .if(body('gender').isIn(['Female', 'Femme']))
+    .notEmpty()
+    .withMessage('Prolactin level is required for female patients')
+    .isFloat({ min: 0 })
+    .withMessage('Prolactin level must be a positive number'),
+
+  body('submittedAt')
+    .optional()
+    .isISO8601()
+    .withMessage('Submitted date must be a valid ISO 8601 date'),
+  handleValidationErrors,
+];
+
+// Plan Request validation
+const validatePlanRequest = [
+  body('planRequest')
+    .isBoolean()
+    .withMessage('Plan request must be a boolean value'),
 
   handleValidationErrors,
 ];
@@ -558,5 +722,8 @@ module.exports = {
   validateLifestyle,
   validateMedicalHistory,
   validateGoals,
+  validatePreferences,
+  validateLabResults,
+  validatePlanRequest,
   handleValidationErrors,
 };

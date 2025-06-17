@@ -9,6 +9,7 @@ const {
   validateLogin,
   validateProfileUpdate,
   validatePasswordChange,
+  validatePlanRequest,
 } = require('../middleware/validation');
 
 // Authentication routes (public)
@@ -26,6 +27,13 @@ router.post(
   '/change-password',
   validatePasswordChange,
   authController.changePassword
+);
+
+// Plan request route
+router.put(
+  '/plan-request',
+  validatePlanRequest,
+  authController.updatePlanRequest
 );
 
 // Logout routes

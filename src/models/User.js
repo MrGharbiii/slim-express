@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
     refreshTokens: [
       {
         token: String,
@@ -49,6 +53,12 @@ const userSchema = new mongoose.Schema(
     profileCompleteness: {
       type: Number,
       default: 0, // Percentage (0-100)
+    },
+
+    // Plan Request Status
+    planRequest: {
+      type: Boolean,
+      default: false,
     },
 
     // Session Info
@@ -124,16 +134,22 @@ const userSchema = new mongoose.Schema(
       },
       smoking: {
         type: String,
-        enum: ['smoker', 'non_smoker', 'occasional_smoker'],
+        enum: ['non_smoker', 'occasional_smoker', 'regular_smoker'],
       },
       alcohol: {
         type: String,
-        enum: ['no_alcohol', 'occasional', 'regular', 'heavy'],
+        enum: [
+          'no_alcohol',
+          'occasional_consumption',
+          'regular_consumption',
+          'excessive_consumption',
+        ],
       },
       initialFatMass: Number,
       initialMuscleMass: Number,
       fatMassTarget: Number,
       muscleMassTarget: Number,
+      waterRetentionPercentage: String,
       numberOfChildren: Number,
       completedAt: Date,
     },
@@ -193,6 +209,16 @@ const userSchema = new mongoose.Schema(
           enum: ['yes', 'no', 'unknown'],
           default: 'unknown',
         },
+        diabetesDT1: {
+          type: String,
+          enum: ['yes', 'no', 'unknown'],
+          default: 'unknown',
+        },
+        diabetesDT2: {
+          type: String,
+          enum: ['yes', 'no', 'unknown'],
+          default: 'unknown',
+        },
         obesity: {
           type: String,
           enum: ['yes', 'no', 'unknown'],
@@ -213,6 +239,7 @@ const userSchema = new mongoose.Schema(
           enum: ['yes', 'no', 'unknown'],
           default: 'unknown',
         },
+        psychologicalIssuesDetails: String,
         digestiveIssues: {
           type: String,
           enum: ['yes', 'no', 'unknown'],
@@ -230,8 +257,7 @@ const userSchema = new mongoose.Schema(
         },
         otherHealthIssues: String,
         sexualDysfunction: {
-          type: String,
-          enum: ['yes', 'no', 'unknown'],
+          type: mongoose.Schema.Types.Mixed, // Can be string or array
           default: 'unknown',
         },
         waterRetentionPercentage: String,
@@ -275,13 +301,15 @@ const userSchema = new mongoose.Schema(
     }, // Goals
     goals: {
       primaryGoal: {
-        type: String,
+        type: [String],
         enum: [
           'weightLoss', // Perte de Poids
           'muscleGain', // Prise de Muscle
           'endurance', // Endurance
           'generalHealth', // Santé Générale
           'strength', // Force
+          'performance', // Performance
+          'fertility', // Fertility
           // Keep old values for backward compatibility
           'weight-loss',
           'weight-gain',
@@ -289,6 +317,7 @@ const userSchema = new mongoose.Schema(
           'maintain-weight',
           'flexibility',
         ],
+        default: [],
       },
       secondaryGoals: {
         type: [String],
@@ -299,27 +328,89 @@ const userSchema = new mongoose.Schema(
           'balance', // Équilibre
           'energyBoost', // Boost d'Énergie
         ],
+        default: [],
       },
-      targetTimeline: Number, // in months
-      currentWeight: Number,
-      targetWeight: Number,
-      weeklyGoal: Number,
+      completedAt: Date,
+    },
+    preferences: {
+      cookingFrequency: {
+        type: String,
+        enum: ['never', 'rarely', 'sometimes', 'often', 'daily'],
+      },
+      dietaryRestrictions: {
+        type: [String], // Accept any array of strings
+        default: [],
+      },
+      equipmentAccess: {
+        type: [String],
+        enum: ['home', 'gym', 'outdoors'],
+      },
+      foodAllergies: {
+        type: String,
+        default: '',
+      },
+      workoutDuration: {
+        type: String,
+        enum: ['15', '30', '45', '60+'],
+      },
+      workoutIntensity: {
+        type: String,
+        enum: ['low', 'medium', 'high'],
+      },
+      completedAt: Date,
+    }, // Lab Results Analysis
+    labResults: {
+      gender: {
+        type: String,
+        enum: ['Male', 'Female', 'Homme', 'Femme'],
+      },
+      homaIR: {
+        type: Number,
+        min: [0, 'HOMA-IR must be a positive number'],
+      },
+      vitD: {
+        type: Number,
+        min: [0, 'Vitamin D must be a positive number'],
+      },
+      ferritin: {
+        type: Number,
+        min: [0, 'Ferritin must be a positive number'],
+      },
+      hemoglobin: {
+        type: Number,
+        min: [0, 'Hemoglobin must be a positive number'],
+      },
+      a1c: {
+        type: Number,
+        min: [0, 'A1C must be a positive number'],
+      },
+      tsh: {
+        type: Number,
+        min: [0, 'TSH must be a positive number'],
+      },
+      testosterone: {
+        type: Number,
+        min: [0, 'Testosterone must be a positive number'],
+      },
+      prolactin: {
+        type: Number,
+        min: [0, 'Prolactin must be a positive number'],
+        // Required only for females - validation handled in middleware
+      },
+      submittedAt: {
+        type: Date,
+        default: Date.now,
+      },
       completedAt: Date,
     },
 
-    // Preferences (optional)
-    preferences: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {},
-    },
-
-    // Data Quality
     dataQuality: {
       hasBasicInfo: { type: Boolean, default: false },
       hasLifestyle: { type: Boolean, default: false },
       hasMedicalHistory: { type: Boolean, default: false },
       hasGoals: { type: Boolean, default: false },
       hasPreferences: { type: Boolean, default: false },
+      hasLabResults: { type: Boolean, default: false },
       completenessScore: { type: String, default: '0%' },
     },
   },
@@ -333,6 +424,7 @@ userSchema.index({ email: 1 });
 userSchema.index({ createdAt: -1 });
 userSchema.index({ lastLoginAt: -1 });
 userSchema.index({ isEmailVerified: 1 });
+userSchema.index({ isAdmin: 1 });
 userSchema.index({ onboardingCompleted: 1 });
 userSchema.index({ onboardingStep: 1 });
 userSchema.index({ 'refreshTokens.token': 1 }); // For token validation
@@ -391,11 +483,28 @@ userSchema.pre('save', function (next) {
     this.lifestyle?.sleepTime &&
     this.lifestyle?.exerciseFrequency
   );
-
   this.dataQuality.hasMedicalHistory = !!this.medicalHistory?.gender;
-
   this.dataQuality.hasGoals = !!(
-    this.goals?.primaryGoal && this.goals?.targetWeight
+    this.goals?.primaryGoal &&
+    Array.isArray(this.goals.primaryGoal) &&
+    this.goals.primaryGoal.length > 0
+  );
+  this.dataQuality.hasPreferences = !!(
+    this.preferences?.workoutDuration ||
+    this.preferences?.equipmentAccess?.length ||
+    this.preferences?.workoutIntensity ||
+    this.preferences?.dietaryRestrictions?.length ||
+    this.preferences?.cookingFrequency
+  );
+
+  this.dataQuality.hasLabResults = !!(
+    this.labResults?.homaIR &&
+    this.labResults?.vitD &&
+    this.labResults?.ferritin &&
+    this.labResults?.hemoglobin &&
+    this.labResults?.a1c &&
+    this.labResults?.tsh &&
+    this.labResults?.testosterone
   );
 
   // Calculate profile completeness
@@ -404,6 +513,7 @@ userSchema.pre('save', function (next) {
     'hasLifestyle',
     'hasMedicalHistory',
     'hasGoals',
+    'hasPreferences',
   ];
   const completedSections = sections.filter(
     (section) => this.dataQuality[section]
@@ -469,6 +579,7 @@ userSchema.methods.getOnboardingStatus = function () {
       medicalHistory: this.dataQuality.hasMedicalHistory,
       goals: this.dataQuality.hasGoals,
       preferences: this.dataQuality.hasPreferences,
+      labResults: this.dataQuality.hasLabResults,
     },
   };
 };
@@ -499,7 +610,6 @@ userSchema.methods.updateOnboardingSection = function (sectionName, data) {
 
   // Mark the section as modified for Mongoose
   this.markModified(sectionName);
-
   // Update onboarding step based on completed sections
   const stepMapping = {
     basicInfo: 1,
@@ -507,6 +617,7 @@ userSchema.methods.updateOnboardingSection = function (sectionName, data) {
     medicalHistory: 3,
     goals: 4,
     preferences: 5,
+    labResults: 6,
   };
 
   if (
@@ -558,6 +669,7 @@ userSchema.methods.getFullProfile = function () {
     medicalHistory: this.medicalHistory,
     goals: this.goals,
     preferences: this.preferences,
+    labResults: this.labResults,
     dataQuality: this.dataQuality,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,

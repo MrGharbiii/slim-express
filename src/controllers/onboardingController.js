@@ -363,6 +363,110 @@ const skipOnboarding = async (req, res, next) => {
   }
 };
 
+/**
+ * Update lab results section
+ */
+const updateLabResults = async (req, res, next) => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array(),
+      });
+    }
+    const userId = req.user.id;
+    const {
+      gender,
+      homaIR,
+      vitD,
+      ferritin,
+      hemoglobin,
+      a1c,
+      tsh,
+      testosterone,
+      prolactin,
+      submittedAt,
+    } = req.body;
+
+    console.log('Updating lab results for user:', userId);
+    console.log('Lab results data:', req.body);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Prepare lab results data
+    const labData = {
+      gender,
+      homaIR,
+      vitD,
+      ferritin,
+      hemoglobin,
+      a1c,
+      tsh,
+      testosterone,
+      submittedAt: submittedAt ? new Date(submittedAt) : new Date(),
+    };
+
+    // Add prolactin if provided (required for females)
+    if (prolactin !== undefined) {
+      labData.prolactin = prolactin;
+    }
+
+    console.log('Prepared lab data:', labData);
+
+    // Update the user's lab results using the updateOnboardingSection method
+    user.updateOnboardingSection('labResults', labData);
+
+    // Save the user
+    await user.save();
+
+    console.log('Lab results saved successfully');
+
+    // Return the updated user profile
+    const updatedProfile = user.getFullProfile();
+
+    res.status(200).json({
+      success: true,
+      message: 'Lab results updated successfully',
+      data: {
+        labResults: updatedProfile.labResults,
+        dataQuality: updatedProfile.dataQuality,
+        profileCompleteness: updatedProfile.profileCompleteness,
+        onboardingStatus: user.getOnboardingStatus(),
+      },
+    });
+  } catch (error) {
+    console.error('Error updating lab results:', error);
+
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map((err) => ({
+        field: err.path,
+        message: err.message,
+        value: err.value,
+      }));
+
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        message: 'Please check your lab results data',
+        details: validationErrors,
+      });
+    }
+
+    next(error);
+  }
+};
+
 module.exports = {
   getOnboardingStatus,
   updateBasicInfo,
@@ -370,6 +474,7 @@ module.exports = {
   updateMedicalHistory,
   updateGoals,
   updatePreferences,
+  updateLabResults,
   completeOnboarding,
   getProfile,
   skipOnboarding,

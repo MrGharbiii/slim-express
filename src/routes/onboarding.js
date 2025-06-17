@@ -7,6 +7,7 @@ const {
   updateMedicalHistory,
   updateGoals,
   updatePreferences,
+  updateLabResults,
   completeOnboarding,
   getProfile,
   skipOnboarding,
@@ -17,6 +18,8 @@ const {
   validateLifestyle,
   validateMedicalHistory,
   validateGoals,
+  validatePreferences,
+  validateLabResults,
 } = require('../middleware/validation');
 
 // All onboarding routes require authentication
@@ -69,7 +72,14 @@ router.put('/goals', validateGoals, updateGoals);
  * @desc    Update preferences section (optional)
  * @access  Private
  */
-router.put('/preferences', updatePreferences);
+router.put('/preferences', validatePreferences, updatePreferences);
+
+/**
+ * @route   POST /api/onboarding/lab-results
+ * @desc    Submit lab results section for analysis
+ * @access  Private
+ */
+router.post('/lab-results', validateLabResults, updateLabResults);
 
 /**
  * @route   POST /api/onboarding/complete

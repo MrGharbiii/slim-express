@@ -101,10 +101,35 @@ const requireVerifiedUser = (req, res, next) => {
   next();
 };
 
+// Middleware to check if user is admin
+const requireAdminUser = (req, res, next) => {
+  if (!req.user) {
+    throw new AppError(
+      'Authentication required to access this resource',
+      401,
+      'AUTHENTICATION_REQUIRED'
+    );
+  }
+
+  if (!req.user.isAdmin) {
+    throw new AppError(
+      'Admin privileges required to access this resource',
+      403,
+      'ADMIN_ACCESS_REQUIRED'
+    );
+  }
+  next();
+};
+
+// Combined middleware for admin routes (auth + admin check)
+const requireAdmin = [authenticateToken, requireAdminUser];
+
 module.exports = {
   generateToken,
   generateRefreshToken,
   authenticateToken,
   optionalAuth,
   requireVerifiedUser,
+  requireAdminUser,
+  requireAdmin,
 };
